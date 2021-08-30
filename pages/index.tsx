@@ -1,21 +1,26 @@
-import type { GetStaticProps, NextPage } from 'next'
-import Head from 'next/head'
-import client from '../contentful'
-import { HomepageContent } from '../types/contentful'
+import type { GetStaticProps } from 'next'
 
-export default function Home({ title }: { title: string }) {
+import Head from 'next/head'
+import { Container, Row, Col } from 'reactstrap'
+
+import { documentToReactComponents } from '@contentful/rich-text-react-renderer'
+import { client } from '../contentful'
+import { IHomeFields } from '../contentful/types'
+
+export default function Home({ title, description }: IHomeFields) {
   return (
-    <div>
+    <Container>
       <Head>
         <title>{title}</title>
       </Head>
       <h1>{title}</h1>
-    </div>
+      <div>{description && documentToReactComponents(description)}</div>
+    </Container>
   )
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  const contentfulEntries = await client.getEntries<HomepageContent>({
+  const contentfulEntries = await client.getEntries<IHomeFields>({
     content_type: 'home',
     limit: 1,
   })
@@ -24,6 +29,7 @@ export const getStaticProps: GetStaticProps = async () => {
   return {
     props: {
       title: homePage.fields.title,
+      description: homePage.fields.description,
     },
     revalidate: 3600,
   }
